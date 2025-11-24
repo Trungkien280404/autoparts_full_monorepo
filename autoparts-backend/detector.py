@@ -6,9 +6,12 @@ import cv2
 import base64
 import google.generativeai as genai
 from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()  # Load environment variables from .env file
 
 # --- CẤU HÌNH API KEY ---
-GEMINI_API_KEY = "AIzaSyBTpDIFkKMLFGzAyRwqV72abVYHPojs-vY"
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 genai.configure(api_key=GEMINI_API_KEY)
 
 VIS_TEMP_PATH = Path(os.path.abspath(os.path.dirname(__file__))) / "vis_temp.png"
