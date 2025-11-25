@@ -1,34 +1,54 @@
-# ----------------------------------------------------
-# 1. File/Thu muc cua Editor & He thong (VS Code & OS)
-# ----------------------------------------------------
-.vscode/           # Loai bo cau hinh local cua Visual Studio Code
-.DS_Store          # File he thong macOS
-Thumbs.db          # File he thong Windows
+----------------------------------------------------
 
-# ----------------------------------------------------
-# 2. File cau hinh nhay cam va tam thoi (Sensitive & Local Config)
-# ----------------------------------------------------
-.env               # File chua thong tin bi mat (API keys, passwords, v.v.)
-.env.*local        # Cac bien moi truong local
-temp_uploads/      # Thu muc chua file tam thoi (duoc thay trong cau truc file)
-uploads/           # Thu muc chua file nguoi dung upload (khong nen cho vao Git)
+1. File/Thu muc cua Editor & He thong (VS Code & OS)
+
+----------------------------------------------------
+
+.vscode/
+.DS_Store
+Thumbs.db
+
+----------------------------------------------------
+
+2. FILE CẤU HÌNH NHẠY CẢM VÀ TẠM THỜI (SECURITY)
+
+----------------------------------------------------
+
+Quy tắc này chặn file .env o moi vi tri (tuyệt đối)
+
+*/.env
+.env.
+
+Loai bo cac file nhay cam da bi commit truoc do
+
+autoparts-backend/.env
+autoparts-frontend/.env
+
+Cac thu muc tam thoi/uploads (chua du lieu user)
+
+temp_uploads/
+uploads/
 /log
 *.log
 
-# ----------------------------------------------------
-# 3. Thu muc Dependencies (Dependencies Folders)
-# ----------------------------------------------------
-# Loai bo node_modules trong ca frontend va backend
-autoparts-backend/node_modules/
-autoparts-frontend/node_modules/
-# Loai bo cac file lock/cache cua npm/yarn
+----------------------------------------------------
+
+3. Thu muc Dependencies & Build
+
+----------------------------------------------------
+
+Loai bo node_modules trong ca frontend va backend
+
+**/node_modules/
+
+Loai bo cac file lock/cache cua npm/yarn
+
 package-lock.json
 yarn.lock
 npm-debug.log*
 
-# ----------------------------------------------------
-# 4. Thu muc Build/Output (Cac file duoc tao ra khi compile/build)
-# ----------------------------------------------------
+Thu muc Build/Output
+
 /dist
 /build
 /out
