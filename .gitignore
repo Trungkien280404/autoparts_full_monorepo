@@ -1,35 +1,41 @@
-# ----------------------------------------------------
-# 1. File/Thu muc cua Editor & He thong (VS Code & OS)
-# ----------------------------------------------------
-.vscode/           # Loai bo cau hinh local cua Visual Studio Code
-.DS_Store          # File he thong macOS
-Thumbs.db          # File he thong Windows
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
 
-# ----------------------------------------------------
-# 2. File cau hinh nhay cam va tam thoi (Sensitive & Local Config)
-# ----------------------------------------------------
-.env               # File chua thong tin bi mat (API keys, passwords, v.v.)
-.env.*local        # Cac bien moi truong local
-temp_uploads/      # Thu muc chua file tam thoi (duoc thay trong cau truc file)
-uploads/           # Thu muc chua file nguoi dung upload (khong nen cho vao Git)
-/log
+# Testing
+coverage/
+
+# Production
+build/
+dist/
+
+# Environment Variables (CRITICAL: Do not remove)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+*.env.*
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs/
 *.log
 
-# ----------------------------------------------------
-# 3. Thu muc Dependencies (Dependencies Folders)
-# ----------------------------------------------------
-# Loai bo node_modules trong ca frontend va backend
-autoparts-backend/node_modules/
-autoparts-frontend/node_modules/
-# Loai bo cac file lock/cache cua npm/yarn
-package-lock.json
-yarn.lock
-npm-debug.log*
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs
+*.njsproj
+*.sln
+*.sw?
+Thumbs.db
 
-# ----------------------------------------------------
-# 4. Thu muc Build/Output (Cac file duoc tao ra khi compile/build)
-# ----------------------------------------------------
-/dist
-/build
-/out
-/release
+# Uploads
+uploads/
+temp_uploads/
