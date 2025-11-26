@@ -100,9 +100,64 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 // ... (Giữ nguyên các API forgot password) ...
-app.post('/api/auth/forgot', async (req, res) => { /* ...Code cũ... */ res.json({ ok: true }) });
-app.post('/api/auth/verify-reset', (req, res) => { /* ...Code cũ... */ res.json({ ok: true }) });
-app.post('/api/auth/reset', async (req, res) => { /* ...Code cũ... */ res.json({ ok: true }) });
+// ===== Forgot Password (IMPLEMENTED) =====
+app.post('/api/auth/forgot', async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ message: 'Thiếu email' });
+
+  try {
+    const userRes = await query('SELECT 1 FROM users WHERE email = $1', [email]);
+    if (userRes.rows.length === 0) return res.status(404).json({ message: 'Email không tồn tại' });
+
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    resetStore[email] = { code, expires: Date.now() + 15 * 60 * 1000 }; // 15 mins
+
+    console.log(`\n[MOCK EMAIL] Code xác minh cho ${email}: ${code}\n`);
+
+    res.json({ message: 'Mã xác minh đã được gửi (kiểm tra console)' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Lỗi server' });
+  }
+});
+
+app.post('/api/auth/verify-reset', (req, res) => {
+  const { email, code } = req.body;
+  const entry = resetStore[email];
+
+  if (!entry || entry.code !== code) return res.status(400).json({ message: 'Mã không đúng' });
+  if (Date.now() > entry.expires) return res.status(400).json({ message: 'Mã đã hết hạn' });
+
+  res.json({ ok: true });
+});
+
+app.post('/api/auth/reset', async (req, res) => {
+  const { email, code, newPassword } = req.body;
+  const entry = resetStore[email];
+
+  if (!entry || entry.code !== code) return res.status(400).json({ message: 'Mã không hợp lệ' });
+  if (Date.now() > entry.expires) return res.status(400).json({ message: 'Mã đã hết hạn' });
+  if (!newPassword || newPassword.length < 4) return res.status(400).json({ message: 'Mật khẩu quá ngắn' });
+
+  try {
+    const salt = await bcryptModule.genSalt(10);
+    const hash = await bcryptModule.hash(newPassword, salt);
+
+    await query('UPDATE users SET password = $1 WHERE email = $2', [hash, email]);
+
+    // Auto login
+    const userRes = await query('SELECT * FROM users WHERE email = $1', [email]);
+    const u = userRes.rows[0];
+    const token = signToken({ email: u.email, role: u.role, name: u.name });
+
+    delete resetStore[email];
+
+    res.json({ ok: true, token, user: { email: u.email, role: u.role, name: u.name } });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Lỗi server' });
+  }
+});
 
 
 // ===== Products (ĐÃ CẬP NHẬT: BỎ BRAND, THÊM UPLOAD) =====

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import Button from './Button.jsx';
-import AuthModal from './AuthModal.jsx';
+// AuthModal đã được chuyển ra App.jsx
+import { setToken } from '../api.js';
 
-export default function Header({ current, onNavigate, session, setSession }) {
-  const [showAuth, setShowAuth] = useState(false);
+export default function Header({ current, onNavigate, session, setSession, onShowAuth }) {
+  // const [showAuth, setShowAuth] = useState(false); // State đã chuyển ra App
 
   // Hàm chọn variant: Nếu là tab hiện tại thì dùng 'primary' (đen), ngược lại 'ghost' (nhạt)
   const getVariant = (tabName) => current === tabName ? 'primary' : 'ghost';
@@ -94,6 +95,7 @@ export default function Header({ current, onNavigate, session, setSession }) {
                 className="text-red-600 hover:bg-red-50"
                 onClick={() => {
                   setSession(null);
+                  setToken(null); // Xóa token khi đăng xuất
                   onNavigate('home'); // Đăng xuất xong về trang chủ
                 }}
               >
@@ -101,24 +103,14 @@ export default function Header({ current, onNavigate, session, setSession }) {
               </Button>
             </>
           ) : (
-            <Button onClick={() => setShowAuth(true)}>
+            <Button onClick={() => onShowAuth(true)}>
               Đăng nhập / Đăng ký
             </Button>
           )}
         </div>
       </div>
 
-      {showAuth && (
-        <AuthModal
-          onClose={() => setShowAuth(false)}
-          onLogin={(s) => {
-            setSession(s.user);
-            setShowAuth(false);
-            // Nếu đăng nhập là admin, tự động chuyển sang Dashboard
-            if (s.user.role === 'admin') onNavigate('dashboard');
-          }}
-        />
-      )}
+      {/* AuthModal đã được chuyển ra App.jsx */}
     </header>
   );
 }

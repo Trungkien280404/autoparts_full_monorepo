@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Api } from './api.js';
+import { Api, setToken } from './api.js';
 // === IMPORT CÁC COMPONENT ĐÃ TÁCH ===
 import Header from './components/Header.jsx';
 import Catalog from './components/Catalog.jsx';
@@ -10,6 +10,7 @@ import MyOrders from './components/MyOrders.jsx';
 import Account from './components/Account.jsx';
 import RequireAdmin from './components/RequireAdmin.jsx';
 import Checkout from './components/Checkout.jsx';
+import AuthModal from './components/AuthModal.jsx';
 
 export default function App() {
   // 1. Lấy session từ localStorage trước
@@ -24,6 +25,22 @@ export default function App() {
     // Người dùng thường hoặc chưa đăng nhập -> vào trang chủ
     return 'home';
   });
+
+  // === QUẢN LÝ AUTH MODAL ===
+  const [showAuth, setShowAuth] = useState(false);
+
+  // Hàm điều hướng có kiểm tra đăng nhập
+  function handleNavigate(targetRoute) {
+    // Các trang yêu cầu đăng nhập
+    const protectedRoutes = ['diagnose', 'checkout'];
+
+    if (protectedRoutes.includes(targetRoute) && !session) {
+      setShowAuth(true);
+      return;
+    }
+
+    setRoute(targetRoute);
+  }
 
   // === QUẢN LÝ GIỎ HÀNG Ở APP ===
   const [cart, setCart] = useState([]);
@@ -86,9 +103,10 @@ export default function App() {
         {/* Header: Chứa thanh menu và nút đăng nhập/đăng xuất */}
         <Header
           current={route}
-          onNavigate={setRoute}
+          onNavigate={handleNavigate}
           session={session}
           setSession={setSession}
+          onShowAuth={setShowAuth}
         />
 
         <main className="max-w-6xl mx-auto p-4 space-y-4">
@@ -97,7 +115,7 @@ export default function App() {
             <Catalog
               cart={cart}
               onAddToCart={addToCart}
-              onCheckout={() => setRoute('checkout')}
+              onCheckout={() => handleNavigate('checkout')}
             />
           )}
 
@@ -119,7 +137,7 @@ export default function App() {
             <Diagnose
               cart={cart}
               addToCart={addToCart}
-              onNavigate={setRoute}
+              onNavigate={handleNavigate}
             />
           )}
 
@@ -144,6 +162,20 @@ export default function App() {
           )}
         </main>
       </div>
+
+      {/* Auth Modal Global */}
+      {showAuth && (
+        <AuthModal
+          onClose={() => setShowAuth(false)}
+          onLogin={(s) => {
+            setSession(s.user);
+            setToken(s.token);
+            setShowAuth(false);
+            // Nếu là admin, vào dashboard
+            if (s.user.role === 'admin') setRoute('dashboard');
+          }}
+        />
+      )}
     </div>
   );
 }
