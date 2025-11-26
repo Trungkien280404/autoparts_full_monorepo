@@ -6,30 +6,33 @@ import Input from './Input.jsx';
 import CatalogPagination from './CatalogPagination.jsx';
 import { PART_LABELS } from '../constants.js';
 
-export default function Catalog({ cart, onAddToCart, onCheckout }) {
+export default function Catalog({ cart, onAddToCart, onDecreaseFromCart, onCheckout }) {
   const [q, setQ] = useState('');
-  const [brand, setBrand] = useState('all');
+  const [sort, setSort] = useState('default');
   const [part, setPart] = useState('all');
   const [products, setProducts] = useState([]);
 
-  useEffect(() => { 
+  useEffect(() => {
     Api.products()
       .then(setProducts)
       .catch(err => console.error("Lỗi tải sản phẩm:", err));
   }, []);
 
-  // Tạo danh sách Brand duy nhất
-  const brands = ['all', ...Array.from(new Set(products.map(p => p.brand)))];
-  
   // Tạo danh sách Part duy nhất
   const parts = ['all', ...Array.from(new Set(products.map(p => p.part)))];
 
-  // Lọc sản phẩm
-  const filtered = products.filter(p =>
-    (brand === 'all' || p.brand === brand) &&
-    (part === 'all' || p.part === part) &&
-    (q === '' || p.name.toLowerCase().includes(q.toLowerCase()))
-  );
+  // Lọc và Sắp xếp sản phẩm
+  const filtered = products
+    .filter(p =>
+      (part === 'all' || p.part === part) &&
+      (q === '' || p.name.toLowerCase().includes(q.toLowerCase()))
+    )
+    .sort((a, b) => {
+      if (sort === 'name_asc') return a.name.localeCompare(b.name);
+      if (sort === 'price_asc') return a.price - b.price;
+      if (sort === 'price_desc') return b.price - a.price;
+      return 0; // default
+    });
 
   // Phân trang
   const [page, setPage] = useState(1);
@@ -65,27 +68,27 @@ export default function Catalog({ cart, onAddToCart, onCheckout }) {
 
             {/* Bộ lọc */}
             <div className="grid md:grid-cols-4 gap-3 mb-4">
-              <Input 
-                placeholder="🔍 Tìm kiếm tên sản phẩm..." 
-                value={q} 
-                onChange={e => setQ(e.target.value)} 
-                className="md:col-span-2" 
+              <Input
+                placeholder="🔍 Tìm kiếm tên sản phẩm..."
+                value={q}
+                onChange={e => setQ(e.target.value)}
+                className="md:col-span-2"
               />
-              
-              <select 
-                className="border border-gray-300 rounded-lg px-3 py-2 bg-white outline-none focus:ring-2 focus:ring-blue-500 text-sm cursor-pointer hover:border-blue-400 transition-colors" 
-                value={brand} 
-                onChange={e => setBrand(e.target.value)}
+
+              <select
+                className="border border-gray-300 rounded-lg px-3 py-2 bg-white outline-none focus:ring-2 focus:ring-blue-500 text-sm cursor-pointer hover:border-blue-400 transition-colors"
+                value={sort}
+                onChange={e => setSort(e.target.value)}
               >
-                <option value="all">Tất cả Hãng</option>
-                {brands.filter(b => b !== 'all').map((b, index) => (
-                  <option key={`brand-${index}-${b}`} value={b}>{b}</option>
-                ))}
+                <option value="default">Mặc định</option>
+                <option value="name_asc">Tên: A - Z</option>
+                <option value="price_asc">Giá: Thấp đến Cao</option>
+                <option value="price_desc">Giá: Cao đến Thấp</option>
               </select>
-              
-              <select 
-                className="border border-gray-300 rounded-lg px-3 py-2 bg-white outline-none focus:ring-2 focus:ring-blue-500 text-sm cursor-pointer hover:border-blue-400 transition-colors" 
-                value={part} 
+
+              <select
+                className="border border-gray-300 rounded-lg px-3 py-2 bg-white outline-none focus:ring-2 focus:ring-blue-500 text-sm cursor-pointer hover:border-blue-400 transition-colors"
+                value={part}
                 onChange={e => setPart(e.target.value)}
               >
                 <option value="all">Tất cả Loại</option>
@@ -103,11 +106,11 @@ export default function Catalog({ cart, onAddToCart, onCheckout }) {
                 {pageItems.map(p => (
                   <div key={p.id} className="bg-white border border-gray-100 rounded-xl overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col group">
                     <div className="h-40 w-full bg-gray-50 relative overflow-hidden group-hover:opacity-95 transition-opacity">
-                      <img 
-                        src={p.img} 
-                        alt={p.name} 
-                        className="w-full h-full object-contain p-2 mix-blend-multiply" 
-                        onError={(e)=>{e.target.src='https://via.placeholder.com/300?text=No+Image'}}
+                      <img
+                        src={p.img}
+                        alt={p.name}
+                        className="w-full h-full object-contain p-2 mix-blend-multiply"
+                        onError={(e) => { e.target.src = 'https://via.placeholder.com/300?text=No+Image' }}
                       />
                       {p.stock <= 5 && p.stock > 0 && (
                         <span className="absolute top-2 right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-sm animate-pulse">
@@ -115,25 +118,25 @@ export default function Catalog({ cart, onAddToCart, onCheckout }) {
                         </span>
                       )}
                     </div>
-                    
+
                     <div className="p-4 flex flex-col flex-1">
                       <div className="text-xs text-gray-500 mb-1 flex justify-between items-center">
                         <span className="bg-gray-100 px-2 py-0.5 rounded text-gray-600 font-medium">{p.brand}</span>
                         <span className="text-gray-400">{PART_LABELS[p.part] || p.part}</span>
                       </div>
-                      
+
                       <h3 className="font-semibold text-gray-900 line-clamp-2 mb-2 flex-1" title={p.name}>
                         {p.name}
                       </h3>
-                      
+
                       <div className="mt-auto pt-3 border-t border-gray-50">
                         <div className="flex justify-between items-center mb-3">
-                           <span className="text-lg font-bold text-blue-600">{p.price.toLocaleString()}₫</span>
-                           <span className="text-xs text-gray-400">Kho: {p.stock}</span>
+                          <span className="text-lg font-bold text-blue-600">{p.price.toLocaleString()}₫</span>
+                          <span className="text-xs text-gray-400">Kho: {p.stock}</span>
                         </div>
-                        
-                        <Button 
-                          className="w-full py-2 text-sm bg-gray-900 hover:bg-gray-800 text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all active:scale-95" 
+
+                        <Button
+                          className="w-full py-2 text-sm bg-gray-900 hover:bg-gray-800 text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all active:scale-95"
                           onClick={() => onAddToCart(p)}
                           disabled={p.stock <= 0}
                         >
@@ -172,12 +175,12 @@ export default function Catalog({ cart, onAddToCart, onCheckout }) {
 
           {cart.length === 0 ? (
             <div className="text-center py-10 text-gray-400 flex flex-col items-center justify-center min-h-[200px]">
-               <div className="bg-gray-50 p-4 rounded-full mb-3">
-                 <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                 </svg>
-               </div>
-               <p className="text-sm">Giỏ hàng của bạn đang trống.</p>
+              <div className="bg-gray-50 p-4 rounded-full mb-3">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+              </div>
+              <p className="text-sm">Giỏ hàng của bạn đang trống.</p>
             </div>
           ) : (
             <div className="flex flex-col h-full">
@@ -185,12 +188,28 @@ export default function Catalog({ cart, onAddToCart, onCheckout }) {
                 {cart.map(i => (
                   <div key={i.id} className="flex gap-3 p-2 hover:bg-gray-50 rounded-lg transition group">
                     <div className="w-14 h-14 rounded-md border border-gray-200 bg-white overflow-hidden flex-shrink-0">
-                      <img src={i.img} className="w-full h-full object-cover" alt={i.name} onError={(e)=>{e.target.src='https://via.placeholder.com/150?text=No+Img'}} />
+                      <img src={i.img} className="w-full h-full object-cover" alt={i.name} onError={(e) => { e.target.src = 'https://via.placeholder.com/150?text=No+Img' }} />
                     </div>
                     <div className="flex-1 min-w-0 flex flex-col justify-center">
                       <div className="text-sm font-medium text-gray-800 line-clamp-1" title={i.name}>{i.name}</div>
-                      <div className="text-xs text-gray-500 flex justify-between mt-1">
-                        <span>SL: x{i.qty}</span>
+                      <div className="text-xs text-gray-500 flex justify-between items-center mt-1">
+                        <div className="flex items-center gap-2">
+                          <button
+                            className="w-5 h-5 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded text-gray-700 font-bold"
+                            onClick={() => onDecreaseFromCart(i.id)}
+                            title="Giảm số lượng"
+                          >
+                            -
+                          </button>
+                          <span>SL: x{i.qty}</span>
+                          <button
+                            className="w-5 h-5 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded text-gray-700 font-bold"
+                            onClick={() => onAddToCart(i)}
+                            title="Tăng số lượng"
+                          >
+                            +
+                          </button>
+                        </div>
                         <span className="font-semibold text-gray-900">{(i.qty * i.price).toLocaleString()}₫</span>
                       </div>
                     </div>

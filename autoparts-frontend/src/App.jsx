@@ -57,6 +57,22 @@ export default function App() {
     });
   }
 
+  function decreaseFromCart(productId) {
+    setCart(prev => {
+      const i = prev.findIndex(x => x.id === productId);
+      if (i < 0) return prev; // Không tìm thấy
+
+      const cp = [...prev];
+      if (cp[i].qty > 1) {
+        cp[i].qty -= 1;
+        return cp;
+      } else {
+        // Nếu còn 1 thì xóa luôn
+        return prev.filter(item => item.id !== productId);
+      }
+    });
+  }
+
   function removeFromCart(productId) {
     setCart(prev => prev.filter(item => item.id !== productId));
   }
@@ -115,6 +131,7 @@ export default function App() {
             <Catalog
               cart={cart}
               onAddToCart={addToCart}
+              onDecreaseFromCart={decreaseFromCart}
               onCheckout={() => handleNavigate('checkout')}
             />
           )}
