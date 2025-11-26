@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { setToken } from '../api.js';
 import Button from './Button.jsx';
 import AuthModal from './AuthModal.jsx';
 
@@ -94,6 +95,7 @@ export default function Header({ current, onNavigate, session, setSession }) {
                 className="text-red-600 hover:bg-red-50"
                 onClick={() => {
                   setSession(null);
+                  setToken(null); // Xóa token khi đăng xuất
                   onNavigate('home'); // Đăng xuất xong về trang chủ
                 }}
               >
@@ -113,6 +115,7 @@ export default function Header({ current, onNavigate, session, setSession }) {
           onClose={() => setShowAuth(false)}
           onLogin={(s) => {
             setSession(s.user);
+            setToken(s.token); // Lưu token khi đăng nhập
             setShowAuth(false);
             // Nếu đăng nhập là admin, tự động chuyển sang Dashboard
             if (s.user.role === 'admin') onNavigate('dashboard');
